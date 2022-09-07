@@ -1,0 +1,261 @@
+import java.sql.*;
+import java.util.Scanner;
+
+class Products_Jdbc {
+
+	Scanner scanner = new Scanner(System.in);
+
+	int productId, productPrice;
+	int productQuantity;
+	String productName;
+	Connection con;
+
+	Products_Jdbc() {
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			con = DriverManager.getConnection(
+					"jdbc:oracle:thin:@vklnld1385:1556:synu1", "HR",
+					"Delta#rw123");
+
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+	}
+
+	void loginUser() {
+		try {
+
+			System.out.print(" Enter user name => ");
+			String userName = scanner.next();
+
+			System.out.print(" Enter password => ");
+			String password = scanner.next();
+
+			String uname = "select USERNAME from USER_DATA";
+			String upass = "select PASSWORD from USER_DATA";
+
+			if (uname.equals(userName) && upass.equals(password)) {
+				System.out.println(" User successfully logged-in.. ");
+			} else {
+				System.out.println(" In valid userName & password ");
+			}
+		} catch (Exception e) {
+		}
+
+	}
+
+	void registerUser() {
+		System.out.print(" Enter First Name: ");
+		String fName = scanner.next();
+
+		System.out.print(" Enter Last Name: ");
+		String lName = scanner.next();
+
+		System.out.print(" Enter Email Id: ");
+		String email = scanner.next();
+
+		System.out.print(" Enter User Name: ");
+		String user = scanner.next();
+
+		System.out.print(" Enter Password: ");
+		String pass = scanner.next();
+
+		PreparedStatement ps = null;
+		int result = 0;
+		try {
+			if (con != null)
+				ps = con.prepareStatement("INSERT INTO USER_DATA (FIRSTNAME,LASTNAME,EMAILID,USERNAME,PASSWORD) VALUES (?,?,?,?,?)");
+			if (ps != null) {
+				ps.setString(1, fName);
+				ps.setString(2, lName);
+				ps.setString(3, email);
+				ps.setString(4, user);
+				ps.setString(5, pass);
+
+				result = ps.executeUpdate();
+			}
+
+			if (result == 0)
+				System.out.println("User Not Registered Successfully");
+			else
+				System.out.println("User Registered successfully!!");
+		} catch (SQLException se) {
+			se.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	void addProductDetails() {
+		System.out.println("Enter Product Id: ");
+		productId = scanner.nextInt();
+		System.out.println("Enter Product name: ");
+		productName = scanner.next();
+		System.out.println("Enter Product price: ");
+		productPrice = scanner.nextInt();
+		System.out.println("Enter Quantity of Products: ");
+		productQuantity = scanner.nextInt();
+		PreparedStatement ps = null;
+		int result = 0;
+		try {
+			if (con != null)
+				ps = con.prepareStatement("INSERT INTO PRODUCT_PROJECT__DATA (PRODUCT_ID,PRODUCT_NAME,PRODUCT_PRICE,PRODUCT_QUANTITY) VALUES (?,?,?,?)");
+			if (ps != null) {
+				ps.setInt(1, productId);
+				ps.setString(2, productName);
+				ps.setInt(3, productPrice);
+				ps.setInt(4, productQuantity);
+				result = ps.executeUpdate();
+			}
+
+			if (result == 0)
+				System.out.println("Record not added");
+			else
+				System.out.println("Record added successfully");
+		} catch (SQLException se) {
+			se.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	void getProductDetails() {
+		try {
+			Statement stmt = con.createStatement();
+			System.out.println("Product Id:\t" + "Product Name:\t"
+					+ "Product Price\t" + "Product Quantity\t");
+			ResultSet rs = stmt
+					.executeQuery("select * from PRODUCT_PROJECT__DATA");
+			while (rs.next())
+				System.out.println(rs.getInt(1) + " \t\t" + rs.getString(2)
+						+ " \t\t" + rs.getInt(3) + " \t\t\t" + rs.getInt(4));
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+	}
+
+	void updateProductDetails(String name) {
+		Scanner scan = new Scanner(System.in);
+
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			// DriverManager.registerDriver
+
+			Connection con = DriverManager.getConnection(
+					"jdbc:oracle:thin:@vklnld1385:1556:synu1", "HR",
+					"Delta#rw123");
+			Statement stmt = con.createStatement();
+			System.out.println("Enter the new Price of Product: ");
+			int price = scan.nextInt();
+
+			System.out
+					.println("Displaying the Updated table values from Database using JDBC");
+			int count = stmt
+					.executeUpdate("UPDATE PRODUCT_PROJECT__DATA SET PRODUCT_PRICE = '"
+							+ price + "' where PRODUCT_NAME = '" + name + "'");
+			if (count > 0) {
+				System.out.println("Update operation successful");
+			} else {
+				System.out.println("Error: Update operation failed");
+			}
+
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+	}
+
+	void deleteProductDetails(String name) {
+		try {
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt
+					.executeQuery("select PRODUCT_NAME from PRODUCT_PROJECT__DATA");
+			while (rs.next()) {
+				if (rs.getString(1).equals(name)) {
+					stmt.executeUpdate("DELETE FROM PRODUCT_PROJECT__DATA WHERE PRODUCT_NAME = '"
+							+ name + "'");
+					if ("name==PRODUCT_NAME" != null) {
+						System.out.println("Product Deleted Successfully");
+					} else {
+						System.out.println("Product Not Found");
+					}
+				}
+			}
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+	}
+
+}
+
+class Products {
+
+	public static void main(String[] args) throws SQLException {
+		Products_Jdbc P = new Products_Jdbc();
+
+		Scanner sc = new Scanner(System.in);
+		try {
+			int choice = 0;
+			String str = null;
+			System.out.println("============================================");
+			System.out.println("Product Management System");
+			System.out.println("============================================");
+			do {
+				System.out.println();
+				System.out.println("**************MENU*************");
+				System.out.println("Press 1: Login");
+				System.out.println("Press 2: Register");
+				System.out.println("Press 3: To add the Products");
+				System.out.println("Press 4: To display the Products");
+				System.out.println("Press 5: To update the Products");
+				System.out.println("Press 6: To delete the Products");
+				System.out.println("Press 0: To Exit");
+				System.out.println("*******************************");
+
+				System.out.println("Ener your choice: ");
+				choice = sc.nextInt();
+				switch (choice) {
+
+				case 1:
+					P.loginUser();
+					break;
+
+				case 2:
+					P.registerUser();
+					break;
+
+				case 3:
+					P.addProductDetails();
+					break;
+
+				case 4:
+					P.getProductDetails();
+					break;
+
+				case 5:
+					System.out
+							.println("Enter name of Product for which to update details: ");
+					str = sc.next();
+					P.updateProductDetails(str);
+					break;
+				case 6:
+					System.out
+							.println("Enter name of Product for which to delete details: ");
+					str = sc.next();
+					P.deleteProductDetails(str);
+					break;
+				case 0:
+					break;
+
+				default:
+					System.out.println("Invalid Input, Please enter values from 0 to 4 ONLY..");
+					break;
+				}
+
+			} while (choice != 0);
+
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+	}
+}
